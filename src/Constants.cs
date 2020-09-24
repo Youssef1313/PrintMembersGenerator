@@ -7,6 +7,7 @@ namespace PrintMembersGenerator
 
         public static readonly string StringBuilderFullyQualifiedName = typeof(System.Text.StringBuilder).FullName;
         public static readonly string BuilderIdentifierName = "builder";
+        public static readonly string ShouldInclude = nameof(ShouldInclude);
         public static readonly string PrintMembers = nameof(PrintMembers);
         public static readonly string AttributeFileName = $"{AttributeClassName}.Generated.cs";
         public static readonly string AttributeFullyQualifiedName = $"{AttributeNamespace}.{AttributeClassName}";
@@ -17,7 +18,7 @@ namespace {AttributeNamespace}
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
     public sealed class {AttributeClassName} : Attribute
     {{
-        public bool ShouldInclude {{ get; set; }} = true;
+        public bool {ShouldInclude} {{ get; set; }} = true;
     }}
 }}
 ";

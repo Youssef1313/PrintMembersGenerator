@@ -72,11 +72,19 @@ Actual type: {declaration.GetType()}", nameof(declaration));
             {
                 return SymbolClassification.UseDefault;
             }
-            object shouldIncludeValue = true; //data.NamedArguments.First(arg => arg.Key == "ShouldInclude").Value.Value;
 
-            if (shouldIncludeValue is not bool booleanShouldIncludeValue)
+            KeyValuePair<string, TypedConstant> shouldIncludeArgument = data.NamedArguments.FirstOrDefault(arg => arg.Key == Constants.ShouldInclude);
+
+            if (shouldIncludeArgument.Key != Constants.ShouldInclude)
             {
-                throw new InvalidOperationException($"The value of {shouldIncludeValue} was expected to be a non-null boolean value.");
+                // If the argument isn't found, then it's not specified and the default value for it (true) is used.
+                // TODO: I don't like this approach. See how this can be improved.
+                return SymbolClassification.ShouldInclude;
+            }
+
+            if (shouldIncludeArgument.Value.Value is not bool booleanShouldIncludeValue)
+            {
+                throw new InvalidOperationException($"The value of {shouldIncludeArgument} was expected to be a non-null boolean value.");
             }
 
             return booleanShouldIncludeValue
