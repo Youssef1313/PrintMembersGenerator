@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <LangVersion>preview</LangVersion>
+    <Nullable>enable</Nullable>
+    <IsPackable>true</IsPackable>
+    <PackageId>PrintMembersGenerator</PackageId>
+    <PackageDescription>
+      A source generator to re-define record's PrintMembers method.
+    </PackageDescription>
+
+    <!-- See https://github.com/dotnet/roslyn/issues/47885#issuecomment-696134398 -->
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="3.8.0-3.final" />
+  </ItemGroup>
+
+</Project>
