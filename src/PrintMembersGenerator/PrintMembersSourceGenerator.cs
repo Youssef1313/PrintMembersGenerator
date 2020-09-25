@@ -71,7 +71,6 @@ namespace PrintMembersGenerator
                 // TODO: Revise null suppression.
                 INamedTypeSymbol recordSymbol = model.GetDeclaredSymbol(node, context.CancellationToken)!;
                 SourceText recordSourceText = PrintMembersGenerator.GeneratePrintMembersText(node, recordSymbol, groups);
-                System.IO.File.WriteAllText(@"C:\Test.txt", recordSourceText.ToString());
 
                 // Can we hit multiple declarations with the same identifier name?? e.g. when the developer have existing two partial declarations.
                 context.AddSource($"{node.Identifier.ValueText}_PrintMembers.Generated.cs", recordSourceText);
