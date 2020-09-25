@@ -45,10 +45,18 @@ namespace SourceGenerator
 }
 ```
 
-As you see, the attribute can only be applied to fields and properties. So, positional record parameters are currently not supported.
+As you see, the attribute can only be applied to fields and properties.
 
 - To force-include a member in `PrintMembers`, you should either use `[PrintMembers]` or `[PrintMembers(ShouldInclude = true)]`.
 - To force-exclude a member in `PrintMembers`, you should use `[PrintMembers(ShouldInclude = false)]`.
+
+Currently, positional record parameters are not supported. Support for them should be added soon through targeted attributes:
+
+```csharp
+[property: PrintMembers(ShouldInclude = false)]
+```
+
+See [this comment on dotnet/csharplang#3644](https://github.com/dotnet/csharplang/issues/3644#issuecomment-692742525).
 
 ## Notes
 
