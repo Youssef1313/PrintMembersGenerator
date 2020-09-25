@@ -113,7 +113,7 @@ namespace PrintMembersGenerator
                 // }
                 statements = statements.Add(SyntaxFactory.IfStatement(
                     condition: GetBasePrintMembersBuilderStatement(),
-                    statement: SyntaxFactory.Block(SyntaxFactory.ExpressionStatement(GetBuilderAppendExpression(GetStringLiteralExpressionSyntax(", "))))
+                    statement: SyntaxFactory.Block(GetBuilderAppendExpressionStatement(GetStringLiteralExpressionSyntax(", ")))
                 ));
             }
 
@@ -122,14 +122,63 @@ namespace PrintMembersGenerator
             for (int i = 0; i < printableMembers.Count; i++)
             {
                 // builder.Append("<MemberName>");
-                statements = statements.Add(SyntaxFactory.ExpressionStatement(GetBuilderAppendExpression(GetStringLiteralExpressionSyntax(printableMembers[i].Name))));
+                statements = statements.Add(GetBuilderAppendExpressionStatement(GetStringLiteralExpressionSyntax(printableMembers[i].Name)));
                 // builder.Append(" = ");
-                statements = statements.Add(SyntaxFactory.ExpressionStatement(GetBuilderAppendExpression(GetStringLiteralExpressionSyntax(" = "))));
-                // TODO: builder.Append((object)MemberName); or builder.Append(MemberName.ToString());
+                statements = statements.Add(GetBuilderAppendExpressionStatement(GetStringLiteralExpressionSyntax(" = ")));
+                //builder.Append((object)MemberName); or builder.Append(MemberName.ToString());
+                if (IsPrintableMemberOfValueType(printableMembers[i]))
+                {
+                    // builder.Append(MemberName.ToString());
+                    statements = statements.Add(
+                        GetBuilderAppendExpressionStatement(
+                            argumentExpression: SyntaxFactory.InvocationExpression(
+                                expression: SyntaxFactory.MemberAccessExpression(
+                                    kind: SyntaxKind.SimpleMemberAccessExpression,
+                                    expression: SyntaxFactory.IdentifierName(printableMembers[i].Name),
+                                    name: SyntaxFactory.IdentifierName(nameof(object.ToString))
+                                )
+                            )
+                        )
+                    );
+                }
+                else
+                {
+                    // builder.Append((object)MemberName);
+                    statements = statements.Add(
+                        GetBuilderAppendExpressionStatement(
+                            argumentExpression: SyntaxFactory.CastExpression(
+                                type: SyntaxFactory.PredefinedType(SyntaxFactory.Token(SyntaxKind.ObjectKeyword)),
+                                expression: SyntaxFactory.IdentifierName(printableMembers[i].Name)
+                            )
+                        )
+                    );
+                }
 
+                // builder.Append(", ");  (except for last member)
+                if (i < printableMembers.Count - 1)
+                {
+                    statements = statements.Add(GetBuilderAppendExpressionStatement(GetStringLiteralExpressionSyntax(", ")));
+                }
             }
-            statements = statements.Add(SyntaxFactory.ReturnStatement(SyntaxFactory.LiteralExpression(SyntaxKind.FalseLiteralExpression)));
+            statements = statements.Add(SyntaxFactory.ReturnStatement(SyntaxFactory.LiteralExpression(SyntaxKind.TrueLiteralExpression)));
             return SyntaxFactory.Block(statements);
+        }
+
+        private static bool IsPrintableMemberOfValueType(ISymbol printableMember)
+        {
+            // If positional parameters are supported later, this needs to be updated.
+            if (printableMember is IPropertySymbol property)
+            {
+                return property.Type.IsValueType;
+            }
+            else if (printableMember is IFieldSymbol field)
+            {
+                return field.Type.IsValueType;
+            }
+            else
+            {
+                throw new InvalidOperationException($"{nameof(printableMember)} was expected to be of type {nameof(IPropertySymbol)} or {nameof(IFieldSymbol)}.");
+            }
         }
 
         private static LiteralExpressionSyntax GetStringLiteralExpressionSyntax(string stringContent)
@@ -170,7 +219,7 @@ namespace PrintMembersGenerator
             );
         }
 
-        private static InvocationExpressionSyntax GetBuilderAppendExpression(ExpressionSyntax argumentExpression)
+        private static InvocationExpressionSyntax GetBuilderAppendInvocationExpression(ExpressionSyntax argumentExpression)
         {
             return SyntaxFactory.InvocationExpression(
                 expression: SyntaxFactory.MemberAccessExpression(
@@ -188,33 +237,13 @@ namespace PrintMembersGenerator
             );
         }
 
-        private static List<ISymbol> GetIncludedByDefault(List<ISymbol> symbols)
-            => symbols.Where(symbol => IsIncludedByDefault(symbol)).ToList();
-
-
-        private static bool IsIncludedByDefault(ISymbol symbol)
+        private static ExpressionStatementSyntax GetBuilderAppendExpressionStatement(ExpressionSyntax argumentExpression)
         {
-            // This method is an exact copy from Roslyn's SynthesizedRecordPrintMembers code:
-            // https://github.com/dotnet/roslyn/blob/585e5693bdb3cf99fa276e31e10e232d1bbe5ee5/src/Compilers/CSharp/Portable/Symbols/Synthesized/Records/SynthesizedRecordPrintMembers.cs#L210-L230
-            // If for some reason the logic from Roslyn changed (which should be very very rare), this should be updated to match it.
-            if (symbol.DeclaredAccessibility != Accessibility.Public || symbol.IsStatic)
-            {
-                return false;
-            }
-
-            if (symbol.Kind is SymbolKind.Field)
-            {
-                return true;
-            }
-
-            if (symbol.Kind is SymbolKind.Property)
-            {
-                var property = (IPropertySymbol)symbol;
-                return !property.IsIndexer && !property.IsOverride && property.GetMethod is not null;
-            }
-
-            return false;
+            return SyntaxFactory.ExpressionStatement(GetBuilderAppendInvocationExpression(argumentExpression));
         }
+
+        private static List<ISymbol> GetIncludedByDefault(List<ISymbol> symbols)
+            => symbols.Where(symbol => symbol.IsIncludedByDefault()).ToList();
 
         private static string GetFullyQualifiedNameOfNamespace(INamespaceSymbol @namespace)
             => @namespace.IsGlobalNamespace ? string.Empty : @namespace.ToDisplayString();

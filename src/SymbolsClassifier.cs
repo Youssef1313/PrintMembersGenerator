@@ -65,6 +65,9 @@ Actual type: {declaration.GetType()}", nameof(declaration));
         /// <summary>
         /// Classifies the given symbol.
         /// </summary>
+        /// <remarks>
+        /// If the user defines the compiler's default, symbol is classified as UseDefault rather than the user's choice.
+        /// </remarks>
         private static SymbolClassification ClassifySymbol(ISymbol symbol, INamedTypeSymbol printMembersAttribute, CancellationToken cancellationToken)
         {
             AttributeData? data = symbol.GetAttributes().FirstOrDefault(attr => SymbolEqualityComparer.Default.Equals(printMembersAttribute, attr.AttributeClass));
@@ -79,12 +82,17 @@ Actual type: {declaration.GetType()}", nameof(declaration));
             {
                 // If the argument isn't found, then it's not specified and the default value for it (true) is used.
                 // TODO: I don't like this approach. See how this can be improved.
-                return SymbolClassification.ShouldInclude;
+                return symbol.IsIncludedByDefault() ? SymbolClassification.UseDefault : SymbolClassification.ShouldInclude;
             }
 
             if (shouldIncludeArgument.Value.Value is not bool booleanShouldIncludeValue)
             {
                 throw new InvalidOperationException($"The value of {shouldIncludeArgument} was expected to be a non-null boolean value.");
+            }
+
+            if (booleanShouldIncludeValue == symbol.IsIncludedByDefault())
+            {
+                return SymbolClassification.UseDefault;
             }
 
             return booleanShouldIncludeValue

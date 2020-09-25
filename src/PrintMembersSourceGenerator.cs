@@ -70,6 +70,7 @@ namespace PrintMembersGenerator
                 if (groups[SymbolClassification.ShouldInclude].Count == 0 &&
                     groups[SymbolClassification.ShouldExclude].Count == 0)
                 {
+                    // don't re-define PrintMembers and keep the compiler's default impl.
                     continue;
                 }
 
