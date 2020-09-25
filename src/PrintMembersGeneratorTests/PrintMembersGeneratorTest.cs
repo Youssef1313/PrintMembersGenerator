@@ -109,7 +109,7 @@ namespace MyCode
             Compilation newComp = RunGenerators(comp, out ImmutableArray<Diagnostic> generatorDiags, new PrintMembersSourceGenerator());
             IEnumerable<SyntaxTree> generatedTrees = newComp.RemoveSyntaxTrees(comp.SyntaxTrees).SyntaxTrees;
 
-            Assert.Equal(generatedTrees.Count(), 2); // Attribute tree and PrintMembers tree.
+            Assert.Equal(2, generatedTrees.Count()); // Attribute tree and PrintMembers tree.
             Assert.True(expectedTree.IsEquivalentTo(generatedTrees.Last()), "Trees doesn't match"); // TODO: Enhance this.
             Assert.Empty(generatorDiags);
             Assert.Empty(newComp.GetDiagnostics());
