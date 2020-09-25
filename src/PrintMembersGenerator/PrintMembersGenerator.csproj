@@ -4,6 +4,8 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <LangVersion>preview</LangVersion>
     <Nullable>enable</Nullable>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <NoWarn>$(NoWarn);NU1603</NoWarn>
     <IsPackable>true</IsPackable>
     <PackageId>PrintMembersGenerator</PackageId>
     <PackageDescription>

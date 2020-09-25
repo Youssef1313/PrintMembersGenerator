@@ -1,0 +1,27 @@
+name: Build PrintMembersGenerator
+
+on: [push, pull_request]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup .NET 5.0
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 5.0.100-rc.1.20452.10
+    - name: Setup .NET Core 3.1
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 3.1.401
+    - name: Restore dependencies
+      run: dotnet restore src
+    - name: Build (release)
+      run: dotnet build src --configuration Release --no-restore
+    - name: Build (debug)
+      run: dotnet build src --configuration Debug --no-restore
+    - name: Test
+      run: dotnet test src --no-restore --verbosity normal
