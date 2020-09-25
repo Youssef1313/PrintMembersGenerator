@@ -67,6 +67,8 @@ Actual type: {declaration.GetType()}", nameof(declaration));
         /// </summary>
         /// <remarks>
         /// If the user defines the compiler's default, symbol is classified as UseDefault rather than the user's choice.
+        /// The reason for this is to avoid re-defining PrintMembers when it's not needed.
+        /// i.e. If all defined attributes are ineffective.
         /// </remarks>
         private static SymbolClassification ClassifySymbol(ISymbol symbol, INamedTypeSymbol printMembersAttribute, CancellationToken cancellationToken)
         {
@@ -76,28 +78,34 @@ Actual type: {declaration.GetType()}", nameof(declaration));
                 return SymbolClassification.UseDefault;
             }
 
-            KeyValuePair<string, TypedConstant> shouldIncludeArgument = data.NamedArguments.FirstOrDefault(arg => arg.Key == Constants.ShouldInclude);
+            bool shouldIncludeValue = getShouldInclude(data);
 
-            if (shouldIncludeArgument.Key != Constants.ShouldInclude)
-            {
-                // If the argument isn't found, then it's not specified and the default value for it (true) is used.
-                // TODO: I don't like this approach. See how this can be improved.
-                return symbol.IsIncludedByDefault() ? SymbolClassification.UseDefault : SymbolClassification.ShouldInclude;
-            }
-
-            if (shouldIncludeArgument.Value.Value is not bool booleanShouldIncludeValue)
-            {
-                throw new InvalidOperationException($"The value of {shouldIncludeArgument} was expected to be a non-null boolean value.");
-            }
-
-            if (booleanShouldIncludeValue == symbol.IsIncludedByDefault())
+            if (shouldIncludeValue == symbol.IsIncludedByDefault())
             {
                 return SymbolClassification.UseDefault;
             }
 
-            return booleanShouldIncludeValue
+            return shouldIncludeValue
                 ? SymbolClassification.ShouldInclude
                 : SymbolClassification.ShouldExclude;
+
+            static bool getShouldInclude(AttributeData data)
+            {
+                KeyValuePair<string, TypedConstant> shouldIncludeArgument = data.NamedArguments.FirstOrDefault(arg => arg.Key == Constants.ShouldInclude);
+                if (shouldIncludeArgument.Key != Constants.ShouldInclude)
+                {
+                    // If the argument isn't found, then it's not specified and the default value for it (true) is used.
+                    // TODO: I don't like this approach. See how this can be improved.
+                    return true;
+                }
+
+                if (shouldIncludeArgument.Value.Value is not bool booleanShouldIncludeValue)
+                {
+                    throw new InvalidOperationException($"The value of {shouldIncludeArgument} was expected to be a non-null boolean value.");
+                }
+
+                return booleanShouldIncludeValue;
+            }
         }
     }
 }
