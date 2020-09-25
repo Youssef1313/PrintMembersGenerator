@@ -15,7 +15,7 @@ namespace PrintMembersGenerator
 
 namespace {AttributeNamespace}
 {{
-    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
+    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property, AllowMultiple = false, Inherited = false)]
     public sealed class {AttributeClassName} : Attribute
     {{
         public bool {ShouldInclude} {{ get; set; }} = true;

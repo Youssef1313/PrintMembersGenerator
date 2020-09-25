@@ -18,12 +18,6 @@ TODO: Analyzers
 */
 
 /*
-TODO: Tests
-1. Is the attribute actually inherited?
-*/
-
-
-/*
 CONSIDER: What if the record original user definition of record is defined in 2 different syntax tree or has two partial declarations.
 */
 
