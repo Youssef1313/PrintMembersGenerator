@@ -1,4 +1,4 @@
-name: .NET Core
+name: Build PrintMembersGenerator
 
 on: [push, pull_request]
 
@@ -17,7 +17,7 @@ jobs:
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 3.1.401
-    - name: Install dependencies
+    - name: Restore dependencies
       run: dotnet restore src
     - name: Build (release)
       run: dotnet build src --configuration Release --no-restore
